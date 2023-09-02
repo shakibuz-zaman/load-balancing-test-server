@@ -27,6 +27,7 @@ namespace LoadBalancingTest.Models
         void InsertOne(TDocument document);
 
         Task InsertOneAsync(TDocument document);
+        Task<IEnumerable<TDocument>> GetFirstXItems(int x);
 
         void InsertMany(ICollection<TDocument> documents);
 

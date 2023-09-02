@@ -21,12 +21,12 @@ public class CpuTasksController : ControllerBase
         //_cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
         //_cpuCounter.NextValue();
     }
-    [HttpGet("Cpu/{scale}")]
+    [HttpGet("GetCpu/{scale}")]
     public async Task<IActionResult> DoCpuTask(int scale)
     {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
-        for (int i = 0; i < scale * 100000000; i++)
+        for (int i = 0; i < scale * 100; i++)
         {
             var sqrt = Math.Sqrt(123123413);
             var gcd = Math.BigMul(111111, 111111);
@@ -43,7 +43,34 @@ public class CpuTasksController : ControllerBase
         Console.WriteLine($"Elapsed time in milliseconds: {elapsedMilliseconds} ms");
         Console.WriteLine($"Elapsed time in seconds: {elapsedSeconds} s");
         await Task.Run(() => { });
-        return Ok(elapsedMilliseconds.ToString());
+        return Ok("s");
+    }
+    [HttpPost("DoCpu")]
+    public async Task<IActionResult> PostCpuTask([FromBody] TaskConfigCommand command)
+    {
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
+        for (int i = 0; i < command.Outer * 10000000; i++)
+        {
+            for(int j=0; j<command.Inner * 5; j++)
+            {
+                var sqrt = Math.Sqrt(123123413);
+                var gcd = Math.BigMul(111111, 111111);
+                var sqrt1 = Math.Sqrt(123123413);
+                var gcd1 = Math.BigMul(111111, 111111);
+                var sqrt2 = Math.Sqrt(123123413);
+                var gcd2 = Math.BigMul(111111, 111111);
+            }
+        }
+        stopwatch.Stop();
+        long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+        double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+
+        // Print the results
+        Console.WriteLine($"Elapsed time in milliseconds: {elapsedMilliseconds} ms");
+        Console.WriteLine($"Elapsed time in seconds: {elapsedSeconds} s");
+        await Task.Run(() => { });
+        return Ok("s");
     }
     [HttpGet("consume/{percentage}")]
     public async Task<IActionResult> ConsumeCpu(int percentage)
@@ -92,5 +119,10 @@ public class CpuTasksController : ControllerBase
             }
         }
     }
+}
+public class TaskConfigCommand
+{
+    public int Outer { get; set; }
+    public int Inner { get; set; }
 }
 

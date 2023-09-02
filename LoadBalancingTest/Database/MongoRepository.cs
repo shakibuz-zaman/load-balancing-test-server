@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Linq.Expressions;
 using LoadBalancingTest.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LoadBalancingTest.Database
 {
@@ -97,6 +98,15 @@ namespace LoadBalancingTest.Database
         {
             var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, document.Id);
             _collection.FindOneAndReplace(filter, document);
+        }
+        public async Task<IEnumerable<TDocument>> GetFirstXItems(int x)
+        {
+
+            var results = await _collection.Find(FilterDefinition<TDocument>.Empty)
+                .Limit(x)
+                .ToListAsync();
+
+            return results;
         }
 
         public virtual async Task ReplaceOneAsync(TDocument document)

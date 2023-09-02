@@ -1,37 +1,81 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
+using LoadBalancingTest.Services;
+using LoadBalancingTest.Models;
+using System.Diagnostics;
+using System.Net;
 
 namespace LoadBalancingTest.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Entity")]
+    [Route("api/[controller]")]
     //[Authorize]
     public class IoController : ControllerBase
     {
-        public IoController()
+        private readonly IDemoService _demoService;
+        public IoController(IDemoService demoService)
         {
+            _demoService = demoService;
         }
-        [HttpGet("Test")]
-        public async Task<IActionResult> Test()
+        [HttpGet("Get")]
+        public async Task<IActionResult> Test(int cnt)
         {
-            var res = await Task.Run(() => "success");
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            //
+            var users = await _demoService.GetFirstXUserInfo(cnt);
             Console.WriteLine($"----------Serving Test results");
-            return Ok(res);
+            //
+            double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+            Console.WriteLine($"Elapsed time in seconds: {elapsedSeconds} s");
+            return Ok(elapsedSeconds);
         }
-        [HttpPost("PostTest")]
+        [HttpPost("Post")]
         public async Task<IActionResult> PostTest([FromBody] TestCommand command)
         {
-            var res = await Task.Run(() => "success");
-            Console.WriteLine($"---------Serving PostTest results");
-            return Ok(res);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            await _demoService.ReadWriteUserInfo(command.ReadCnt, command.WriteCnt);
+
+            double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+            //var response = new HttpResponseMessage(HttpStatusCode.OK);
+
+            // Set the Transfer-Encoding header to "chunked"
+            //response.Headers.TransferEncodingChunked = true;
+
+            Console.WriteLine($"Elapsed time in seconds: {elapsedSeconds} s");
+            return Ok(elapsedSeconds);
+        }
+        [HttpPost("PostAdd")]
+        public async Task<IActionResult> PostAddTest([FromBody] CreateCommand command)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            await _demoService.SaveUserInfo(command.ItemsCount);
+
+            double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+            //var response = new HttpResponseMessage(HttpStatusCode.OK);
+
+            // Set the Transfer-Encoding header to "chunked"
+            //response.Headers.TransferEncodingChunked = true;
+
+            Console.WriteLine($"Elapsed time in seconds: {elapsedSeconds} s");
+            return Ok(elapsedSeconds);
         }
     }
 
     public class TestCommand
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
+        public int ReadCnt { get; set; }
+        public int WriteCnt { get; set; }
+
+    }
+    public class CreateCommand
+    {
+        public int ItemsCount { get; set; }
 
     }
 }
